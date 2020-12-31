@@ -7,11 +7,14 @@ import MyRouter from './routes/Router'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './assets/custom.scss';
 
+
 function App() {
   return (
     <Provider store={store}> 
       <ConnectedRouter history={history}>
-        <MyRouter />
+        
+          <MyRouter />
+        
       </ConnectedRouter>
     </Provider>
   )

@@ -1,5 +1,4 @@
-import { Switch } from "react-router-dom";
-import { LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS } from "../types";
+import { CLEAR_ERROR_FAILURE, CLEAR_ERROR_REQUEST, CLEAR_ERROR_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS } from "../types";
 
 const initialState = {  
     token: localStorage.getItem('token'),
@@ -14,7 +13,7 @@ const initialState = {
 };
 
 const authReducer = (state = initialState, action) => {
-    Switch(action.type) {
+    switch(action.type) {
         case LOGIN_REQUEST :
             return {
                 ...state,
