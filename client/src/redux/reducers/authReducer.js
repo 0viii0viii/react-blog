@@ -1,4 +1,13 @@
-import { CLEAR_ERROR_FAILURE, CLEAR_ERROR_REQUEST, CLEAR_ERROR_SUCCESS, LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS } from "../types";
+import { 
+    CLEAR_ERROR_FAILURE, 
+    CLEAR_ERROR_REQUEST, 
+    CLEAR_ERROR_SUCCESS, 
+    LOGIN_FAILURE, 
+    LOGIN_REQUEST, 
+    LOGIN_SUCCESS, 
+    LOGOUT_FAILURE, 
+    LOGOUT_REQUEST, 
+    LOGOUT_SUCCESS } from "../types";
 
 const initialState = {  
     token: localStorage.getItem('token'),
@@ -14,14 +23,15 @@ const initialState = {
 
 const authReducer = (state = initialState, action) => {
     switch(action.type) {
+        case LOGOUT_REQUEST:
         case LOGIN_REQUEST :
             return {
                 ...state,
                 errorMsg:"",
                 isLoading: true
-            }
+            }   
         case LOGIN_SUCCESS:
-            localStorage.setItem('token', action.payload.token)
+            localStorage.setItem('token', action.payload.token);
             return {
                 ...state,
                 ...action.payload,
@@ -31,8 +41,9 @@ const authReducer = (state = initialState, action) => {
                 userRole: action.payload.user.role,
                 errorMsg:""
             }
+        case LOGOUT_FAILURE:    
         case LOGIN_FAILURE:
-            localStorage.removeItem('token', action.payload.token)
+            localStorage.removeItem('token', action.payload.token);
             return {
                 ...state,
                 ...action.payload,
@@ -44,6 +55,17 @@ const authReducer = (state = initialState, action) => {
                 userRole: null,
                 errorMsg: action.payload.data.msg
             }
+        case LOGOUT_SUCCESS:
+                localStorage.removeItem('token');
+             return {
+                ...state,
+                ...action.payload,
+                isAuthenticated: true,
+                isLoading: false,
+                userId: action.payload.user.id,
+                userRole: action.payload.user.role,
+                errorMsg:""
+                }
         case CLEAR_ERROR_REQUEST:
             return {
                 ...state,
@@ -58,7 +80,7 @@ const authReducer = (state = initialState, action) => {
             return {
                 ...state,
                 errorMsg: null,
-            }  
+            } 
         default:
             return state;  
         
