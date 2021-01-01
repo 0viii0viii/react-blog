@@ -1,15 +1,14 @@
-import React from 'react'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
+import React from 'react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import AppNavbar from '../components/AppNavbar';
 
-const MyRouter = () =>
- (
+const MyRouter = () => (
   <>
-      <AppNavbar />
-      <Header />
-      <h1>Jamie Bardy</h1>
-      <Footer />
+    <AppNavbar />
+    <Header />
+    <h1>Jamie Bardy</h1>
+    <Footer />
   </>
 );
 

@@ -3,20 +3,20 @@ import { Row, Col } from 'reactstrap';
 
 const Footer = () => {
   const thisYear = () => {
-      const year = new Date().getFullYear();
-      return year;
+    const year = new Date().getFullYear();
+    return year;
   };
   return (
-      <div id='main-footer' className='text-center m-auto p-2'>
-          <Row>
-              <Col>
-                <p>
-                    Copyright &copy; <span>{thisYear()}</span>
-                </p>
-              </Col>
-          </Row>
-      </div>
-  )
+    <div id="main-footer" className="text-center m-auto p-2">
+      <Row>
+        <Col>
+          <p>
+            Copyright &copy; <span>{thisYear()}</span>
+          </p>
+        </Col>
+      </Row>
+    </div>
+  );
 };
 
 export default Footer;

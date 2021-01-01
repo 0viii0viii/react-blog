@@ -1,37 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  NavLink,
-  Modal,
-  ModalHeader,
-  ModalBody,
   Alert,
+  Button,
   Form,
   FormGroup,
-  Label,
   Input,
-  Button,
+  Label,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  NavLink,
 } from 'reactstrap';
-import { CLEAR_ERROR_REQUEST, LOGIN_REQUEST } from '../../redux/types';
+import { CLEAR_ERROR_REQUEST, REGISTER_REQUEST } from '../../redux/types';
 
-const LoginModal = () => {
+const RegisterModal = () => {
   const [modal, setModal] = useState(false);
-  const [localMsg, setLocalMsg] = useState('');
-  const [form, setValues] = useState({
+  const [form, setValue] = useState({
+    name: '',
     email: '',
     password: '',
   });
-  const dispatch = useDispatch();
-
+  const [localMsg, setLocalMsg] = useState('');
   const { errorMsg } = useSelector((state) => state.auth);
-  useEffect(() => {
-    try {
-      setLocalMsg(errorMsg);
-    } catch (e) {
-      console.log(e);
-    }
-  }, [errorMsg]);
 
+  const dispatch = useDispatch();
   const handleToggle = () => {
     dispatch({
       type: CLEAR_ERROR_REQUEST,
@@ -39,8 +32,16 @@ const LoginModal = () => {
     setModal(!modal);
   };
 
+  useEffect(() => {
+    try {
+      setLocalMsg(errorMsg);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [errorMsg]);
+
   const onChange = (e) => {
-    setValues({
+    setValue({
       ...form,
       [e.target.name]: e.target.value,
     });
@@ -48,35 +49,43 @@ const LoginModal = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const { email, password } = form;
-    const user = { email, password };
-    console.log(user);
+    const { name, email, password } = form;
+    const newUser = { name, email, password };
+    console.log(newUser, 'newUser');
     dispatch({
-      type: LOGIN_REQUEST,
-      payload: user,
+      type: REGISTER_REQUEST,
+      payload: newUser,
     });
   };
   return (
     <div>
       <NavLink
         onClick={handleToggle}
-        className="text-white text-decoration-none"
         href="#"
+        className="text-white text-decoration-none"
       >
-        Login
+        Register
       </NavLink>
       <Modal isOpen={modal} toggle={handleToggle}>
-        <ModalHeader toggle={handleToggle}>Login</ModalHeader>
+        <ModalHeader toggle={handleToggle}>Register</ModalHeader>
         <ModalBody>
-          {localMsg ? <Alert color="danger"> {localMsg}</Alert> : null}
+          {localMsg ? <Alert color="danger">{localMsg}</Alert> : null}
           <Form onSubmit={onSubmit}>
             <FormGroup>
+              <Label for="name">Name</Label>
+              <Input
+                type="text"
+                name="name"
+                id="name"
+                placeholder="Name"
+                onChange={onChange}
+              />
               <Label for="email">Email</Label>
               <Input
                 type="email"
                 name="email"
                 id="email"
-                placeholder="Email"
+                placeholder="email"
                 onChange={onChange}
               />
               <Label for="password">Password</Label>
@@ -87,8 +96,8 @@ const LoginModal = () => {
                 placeholder="Password"
                 onChange={onChange}
               />
-              <Button color="dark" style={{ marginTop: '2rem' }}>
-                Login
+              <Button color="dark" className="mt-2" block>
+                Register
               </Button>
             </FormGroup>
           </Form>
@@ -98,4 +107,4 @@ const LoginModal = () => {
   );
 };
 
-export default LoginModal;
+export default RegisterModal;
