@@ -15,12 +15,24 @@ import { editorConfiguration } from '../../components/editor/EditorConfig';
 import Myinit from '../../components/editor/UploadAdapter';
 
 import dotenv from 'dotenv';
+import { POST_UPLOADING_REQUEST } from '../../redux/types';
 dotenv.config();
 
 const PostWrite = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [form, setValues] = useState({ title: '', contents: '', fileUrl: '' });
   const dispatch = useDispatch();
+
+  const onSubmit = async (e) => {
+    await e.preventDefault();
+    const { title, contents, fileUrl, category } = form;
+    const token = localStorage.getItem('token');
+    const body = { title, contents, fileUrl, category, token };
+    dispatch({
+      type: POST_UPLOADING_REQUEST,
+      payload: body,
+    });
+  };
 
   const onChange = (e) => {
     setValues({
@@ -32,6 +44,7 @@ const PostWrite = () => {
   const getDataFromCKEditor = (event, editor) => {
     const data = editor.getData();
     console.log(data);
+
     // 이미지 주소를 얻기 위해
     if (data && data.match('<img src=')) {
       const whereImg_start = data.indexOf('<img src=');
@@ -70,11 +83,6 @@ const PostWrite = () => {
         contents: data,
       });
     }
-  };
-
-  const onSubmit = async (e) => {
-    await e.preventDefault();
-    const { title, contents, fileUrl, category } = form;
   };
 
   return (

@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../../middleware/auth';
-
+import moment from 'moment';
 // Model
 import Post from '../../models/post';
 import Category from '../../models/category';
@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
   res.json(postFindResult);
 });
 
-// @route POST apit/post
+// @route POST api/post
 // @desc Create a Post
 // @access Private
 router.post('/', auth, uploadS3.none(), async (req, res, next) => {
@@ -68,7 +68,7 @@ router.post('/', auth, uploadS3.none(), async (req, res, next) => {
       contents,
       fileUrl,
       creator: req.user.id,
-      data: moment().format('YYYY-MM-DD hh:mm:ss'),
+      date: moment().format('YYYY-MM-DD hh:mm:ss'),
     });
 
     const findResult = await Category.findOne({
@@ -83,7 +83,7 @@ router.post('/', auth, uploadS3.none(), async (req, res, next) => {
       });
       await Post.findByIdAndUpdate(newPost.id, {
         // post와 category 연결
-        push: { category: newCategory._id },
+        $push: { category: newCategory._id },
       });
       await Category.findByIdAndUpdate(newCategory._id, {
         // category와 post 연결
@@ -94,14 +94,14 @@ router.post('/', auth, uploadS3.none(), async (req, res, next) => {
           posts: newPost._id,
         },
       });
-      return res.redirect(`/api/post/${newPosts._id}`);
+      return res.redirect(`/api/post/${newPost._id}`);
     } else {
       //있을경우
       await Category.findByIdAndUpdate(findResult._id, {
         $push: { posts: newPost._id },
       });
       await Post.findByIdAndUpdate(newPost._id, {
-        cateogry: findResult._id,
+        category: findResult._id,
       });
       await User.findByIdAndUpdate(req.user.id, {
         $push: {
@@ -109,7 +109,7 @@ router.post('/', auth, uploadS3.none(), async (req, res, next) => {
         },
       });
     }
-    return res.redirect(`/api/post/${newPosts._id}`);
+    return res.redirect(`/api/post/${newPost._id}`);
   } catch (e) {
     console.log(e);
   }
@@ -122,11 +122,15 @@ router.post('/', auth, uploadS3.none(), async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id)
-      .popuplate('creator', 'name')
+      .populate('creator', 'name')
       .populate({
-        path: category,
+        path: 'category',
         select: 'categoryName',
       });
+    post.views += 1;
+    post.save();
+    console.log(post);
+    res.json(post);
   } catch (e) {
     console.log(e);
     next(e);
