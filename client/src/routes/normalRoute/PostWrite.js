@@ -14,6 +14,9 @@ import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
 import { editorConfiguration } from '../../components/editor/EditorConfig';
 import Myinit from '../../components/editor/UploadAdapter';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const PostWrite = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [form, setValues] = useState({ title: '', contents: '', fileUrl: '' });
@@ -26,7 +29,48 @@ const PostWrite = () => {
     });
   };
 
-  const getDataFromCKEditor = (event, editor) => {};
+  const getDataFromCKEditor = (event, editor) => {
+    const data = editor.getData();
+    console.log(data);
+    // 이미지 주소를 얻기 위해
+    if (data && data.match('<img src=')) {
+      const whereImg_start = data.indexOf('<img src=');
+      let whereImg_end = '';
+      let ext_name_find = '';
+      let result_Img_Url = '';
+      const ext_name = ['jpeg', 'png', 'jpg', 'gif'];
+
+      for (let i = 0; i < ext_name.length; i++) {
+        if (data.match(ext_name[i])) {
+          console.log(data.indexOf(`${ext_name[i]}`));
+          ext_name_find = ext_name[i];
+          whereImg_end = data.indexOf(`${ext_name[i]}`);
+        }
+      }
+      console.log(ext_name_find);
+      console.log(whereImg_end);
+
+      if (ext_name_find === 'jpeg') {
+        result_Img_Url = data.substring(whereImg_start + 10, whereImg_end + 4);
+      } else {
+        result_Img_Url = data.substring(whereImg_start + 10, whereImg_end + 3);
+      }
+
+      console.log(result_Img_Url, 'result_img_Url'); //저장 backend
+      setValues({
+        ...form,
+        fileUrl: result_Img_Url,
+        contents: data,
+      });
+    } else {
+      //이미지가 없다면
+      setValues({
+        ...form,
+        fileUrl: 'https://source.unsplash.com/random/301x201',
+        contents: data,
+      });
+    }
+  };
 
   const onSubmit = async (e) => {
     await e.preventDefault();
@@ -65,7 +109,7 @@ const PostWrite = () => {
               editor={ClassicEditor}
               config={editorConfiguration}
               onReady={Myinit}
-              onBlur={getDataFromCKEditor} //
+              onBlur={getDataFromCKEditor}
             />
             <Button
               color="success"

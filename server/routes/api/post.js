@@ -3,6 +3,8 @@ import auth from '../../middleware/auth';
 
 // Model
 import Post from '../../models/post';
+import Category from '../../models/category';
+import User from '../../models/user';
 
 const router = express.Router();
 
@@ -11,6 +13,7 @@ import multerS3 from 'multer-s3';
 import path from 'path';
 import AWS from 'aws-sdk';
 import dotenv from 'dotenv';
+import { isNullOrUndefined } from 'util';
 dotenv.config();
 
 const s3 = new AWS.S3({
@@ -36,9 +39,9 @@ const uploadS3 = multer({
 // @desc   Create a Post
 // @access Private
 
-router.post('image', uploadS3.array('upload', 5), async (req, res, next) => {
+router.post('/image', uploadS3.array('upload', 5), async (req, res, next) => {
   try {
-    console.log(req.files.name.map((v) => v.location));
+    console.log(req.files.map((v) => v.location));
     res.json({ uploaded: true, url: req.files.map((v) => v.location) });
   } catch (error) {
     console.error(e);
@@ -53,20 +56,80 @@ router.get('/', async (req, res) => {
   res.json(postFindResult);
 });
 
-router.post('/', auth, async (req, res, next) => {
+// @route POST apit/post
+// @desc Create a Post
+// @access Private
+router.post('/', auth, uploadS3.none(), async (req, res, next) => {
   try {
     console.log(req, 'req');
-    const { title, contents, fileUrl, creator } = req.body;
+    const { title, contents, fileUrl, creator, category } = req.body;
     const newPost = await Post.create({
       title,
       contents,
       fileUrl,
-      creator,
+      creator: req.user.id,
+      data: moment().format('YYYY-MM-DD hh:mm:ss'),
     });
-    res.json(newPost);
+
+    const findResult = await Category.findOne({
+      categoryName: category,
+    });
+
+    console.log(findResult, 'Find Result');
+
+    if (isNullOrUndefined(findResult)) {
+      const newCategory = await Category.create({
+        categoryName: category,
+      });
+      await Post.findByIdAndUpdate(newPost.id, {
+        // post와 category 연결
+        push: { category: newCategory._id },
+      });
+      await Category.findByIdAndUpdate(newCategory._id, {
+        // category와 post 연결
+        $push: { posts: newPost._id },
+      });
+      await User.findByIdAndUpdate(req.user.id, {
+        $push: {
+          posts: newPost._id,
+        },
+      });
+      return res.redirect(`/api/post/${newPosts._id}`);
+    } else {
+      //있을경우
+      await Category.findByIdAndUpdate(findResult._id, {
+        $push: { posts: newPost._id },
+      });
+      await Post.findByIdAndUpdate(newPost._id, {
+        cateogry: findResult._id,
+      });
+      await User.findByIdAndUpdate(req.user.id, {
+        $push: {
+          posts: newPost._id,
+        },
+      });
+    }
+    return res.redirect(`/api/post/${newPosts._id}`);
   } catch (e) {
     console.log(e);
   }
 });
 
+// @route POST api/post/:id
+// @desc  Detail POST
+// @access Public
+
+router.get('/:id', async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .popuplate('creator', 'name')
+      .populate({
+        path: category,
+        select: 'categoryName',
+      });
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+});
 export default router;
