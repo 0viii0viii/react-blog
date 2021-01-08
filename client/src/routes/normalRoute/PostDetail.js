@@ -7,8 +7,16 @@ import {
   USER_LOADING_REQUEST,
 } from '../../redux/types';
 import { Col, Row, Button } from 'reactstrap';
-import CKEditor from '@ckeditor/ckeditor5-react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faPencilAlt,
+  faCommentDots,
+  faMouse,
+} from '@fortawesome/free-solid-svg-icons';
+import BallonEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor';
+import { editorConfiguration } from '../../components/editor/EditorConfig';
 
 const PostDetail = (req) => {
   const dispatch = useDispatch();
@@ -27,7 +35,7 @@ const PostDetail = (req) => {
       type: USER_LOADING_REQUEST,
       payload: localStorage.getItem('token'),
     });
-  }, []);
+  }, [dispatch, req.match.params.id]);
 
   const onDeleteClick = () => {
     dispatch({
@@ -100,6 +108,32 @@ const PostDetail = (req) => {
           }
         })()}
       </Row>
+      {postDetail && postDetail.comments ? (
+        <>
+          <div className="d-flex justify-content-end align-items-baseline small">
+            <FontAwesomeIcon icon={faPencilAlt} />
+            &nbsp;
+            <span> {postDetail.date}</span>
+            &nbsp;&nbsp;
+            <FontAwesomeIcon icon={faCommentDots} />
+            &nbsp;
+            <span>{postDetail.comments.length}</span>
+            &nbsp;&nbsp;
+            <FontAwesomeIcon icon={faMouse} />
+            <span>{postDetail.views}</span>
+          </div>
+          <Row className="mb-3">
+            <CKEditor
+              editor={BallonEditor}
+              data={postDetail.contents}
+              config={editorConfiguration}
+              disabled="true"
+            />
+          </Row>
+        </>
+      ) : (
+        ''
+      )}
     </>
   );
   return (

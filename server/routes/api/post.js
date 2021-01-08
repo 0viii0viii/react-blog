@@ -5,6 +5,7 @@ import moment from 'moment';
 import Post from '../../models/post';
 import Category from '../../models/category';
 import User from '../../models/user';
+import Comment from '../../models/comment';
 
 const router = express.Router();
 
@@ -127,10 +128,60 @@ router.get('/:id', async (req, res, next) => {
         path: 'category',
         select: 'categoryName',
       });
-    post.views += 1;
+
+    req.params.idpost.views += 1;
     post.save();
+
     console.log(post);
     res.json(post);
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+});
+
+// COMMENTS
+
+// @route Get api/post/:id/comments
+// @desc Get All Comments
+// @access public
+
+router.get('/:id/comments', async (req, res) => {
+  try {
+    const comment = await Post.findById(req.params.id).populate({
+      path: 'comment',
+    });
+    const result = comment.comments;
+    console.log(result, 'comment load');
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+router.post('/:id/comments', async (req, res) => {
+  const newComment = await Comment.create({
+    contents: req.body.contents,
+    creator: req.body.userId,
+    creatorName: req.body.userName,
+    post: req.body.id,
+    date: moment().format('YYYY-MM-DD hh:mm:ss'),
+  });
+  console.log(newComment, 'newComment');
+  try {
+    await Post.findByIdAndUpdate(req.body.id, {
+      $push: {
+        comments: newComment._id,
+      },
+    });
+    await User.findByIdAndUpdate(req.body.userId, {
+      $push: {
+        comments: {
+          post_id: req.body.id,
+          comment_id: newComment._id,
+        },
+      },
+    });
+    res.json(newComment);
   } catch (e) {
     console.log(e);
     next(e);
