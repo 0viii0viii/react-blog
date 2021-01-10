@@ -30,8 +30,8 @@ import { all, call, fork, put, takeEvery } from 'redux-saga/effects';
 
 // All Posts load
 
-const loadPostAPI = () => {
-  return axios.get('/api/post');
+const loadPostAPI = (payload) => {
+  return axios.get(`/api/post/skip/${payload}`);
 };
 
 function* loadPosts(action) {
@@ -47,7 +47,6 @@ function* loadPosts(action) {
       type: POST_LOADING_FAILURE,
       payload: e,
     });
-    yield push('/');
   }
 }
 function* watchLoadPosts() {

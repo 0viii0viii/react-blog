@@ -50,12 +50,24 @@ router.post('/image', uploadS3.array('upload', 5), async (req, res, next) => {
   }
 });
 
+// @route     GET api/post
+// @desc      More Loading Posts
+// @access    Public
 // api/post
-router.get('/', async (req, res) => {
-  const postFindResult = await Post.find();
-  const categoryFindResult = await Category.find();
-  const result = { postFindResult, categoryFindResult };
-  res.json(result);
+router.get('/skip/:skip', async (req, res) => {
+  try {
+    const postCount = await Post.countDocuments();
+    const postFindResult = await Post.find()
+      .skip(Number(req.params.skip))
+      .limit(6)
+      .sort({ date: -1 });
+    const categoryFindResult = await Category.find();
+    const result = { postFindResult, categoryFindResult, postCount };
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+    res.json({ msg: '더 이상 게시글이 없습니다.' });
+  }
 });
 
 // @route POST api/post
