@@ -6,10 +6,11 @@ import {
   POST_DELETE_REQUEST,
   USER_LOADING_REQUEST,
 } from '../../redux/types';
-import { Col, Row, Button } from 'reactstrap';
+import { Col, Row, Button, Container } from 'reactstrap';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { GrowingSpinner } from '../../components/spinner/Spinner';
 import {
   faPencilAlt,
   faCommentDots,
@@ -17,6 +18,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import BallonEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor';
 import { editorConfiguration } from '../../components/editor/EditorConfig';
+import Comments from '../../components/comments/Comments';
 
 const PostDetail = (req) => {
   const dispatch = useDispatch();
@@ -24,6 +26,7 @@ const PostDetail = (req) => {
     (state) => state.post
   );
   const { userId, userName } = useSelector((state) => state.auth);
+  const { comments } = useSelector((state) => state.comment);
   console.log(req);
 
   useEffect(() => {
@@ -41,7 +44,7 @@ const PostDetail = (req) => {
     dispatch({
       type: POST_DELETE_REQUEST,
       payload: {
-        id: req.match.params._id,
+        id: req.match.params.id,
         token: localStorage.getItem('token'),
       },
     });
@@ -89,7 +92,7 @@ const PostDetail = (req) => {
   const Body = (
     <>
       {userId === creatorId ? EditButton : HomeButton}
-      <Row className="border_bottom border-top border-primary p-3 mb-3 justify-content-between">
+      <Row className="border-bottom border-top border-primary p-3 mb-3 justify-content-between">
         {(() => {
           if (postDetail && postDetail.creator) {
             return (
@@ -130,16 +133,52 @@ const PostDetail = (req) => {
               disabled="true"
             />
           </Row>
+          <Row>
+            <Container className="mb-3 border border-blue rounded">
+              {Array.isArray(comments)
+                ? comments.map(
+                    ({ contents, creator, date, _id, creatorName }) => (
+                      <div key={_id}>
+                        <Row className="justify-content-between p-2">
+                          <div className="font-weight-bold">
+                            {creatorName ? creatorName : creator}
+                          </div>
+                          <div className="text-small">
+                            <span className="font-weight-bold">
+                              {date.split(' ')[0]}
+                            </span>
+                            <span className="font-weight-light">
+                              {' '}
+                              {date.split(' ')[1]}
+                            </span>
+                          </div>
+                        </Row>
+                        <Row className="p-2">
+                          <div>{contents}</div>
+                        </Row>
+                        <hr />
+                      </div>
+                    )
+                  )
+                : 'Creator'}
+              <Comments
+                id={req.match.params.id}
+                userId={userId}
+                userName={userName}
+              />
+            </Container>
+          </Row>
         </>
       ) : (
         ''
       )}
     </>
   );
+  console.log(comments, 'Comments');
   return (
     <div>
       <Helmet title={`Post | ${title}`} />
-      {loading === true ? 'sibakl' : Body}
+      {loading === true ? GrowingSpinner : Body}
     </div>
   );
 };

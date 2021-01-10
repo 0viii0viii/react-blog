@@ -7,8 +7,10 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import PostCardList from './normalRoute/PostCardList';
 import PostWrite from './normalRoute/PostWrite';
 import PostDetail from './normalRoute/PostDetail';
+import PostEdit from './normalRoute/PostEdit';
 import Search from './normalRoute/Search';
 import CategoryResult from './normalRoute/CategoryResult';
+import { EditProtectedRoute } from './protectedRoute/ProtectedRoute';
 
 const MyRouter = () => (
   <>
@@ -19,8 +21,9 @@ const MyRouter = () => (
         <Route path="/" exact component={PostCardList} />
         <Route path="/post" exact component={PostWrite} />
         <Route path="/post/:id" exact component={PostDetail} />
+        <EditProtectedRoute path="/post/:id/edit" exact component={PostEdit} />
         <Route
-          path="/posts/category/:categoryName"
+          path="/post/category/:categoryName"
           exact
           component={CategoryResult}
         />

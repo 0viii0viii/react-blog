@@ -1,5 +1,8 @@
 import axios from 'axios';
 import {
+  POST_DELETE_SUCCESS,
+  POST_DELETE_FAILURE,
+  POST_DELETE_REQUEST,
   POST_DETAIL_LOADING_FAILURE,
   POST_DETAIL_LOADING_REQUEST,
   POST_DETAIL_LOADING_SUCCESS,
@@ -9,6 +12,15 @@ import {
   POST_UPLOADING_FAILURE,
   POST_UPLOADING_REQUEST,
   POST_UPLOADING_SUCCESS,
+  POST_EDIT_LOADING_SUCCESS,
+  POST_EDIT_LOADING_FAILURE,
+  POST_EDIT_LOADING_REQUEST,
+  POST_EDIT_UPLOADING_REQUEST,
+  POST_EDIT_UPLOADING_FAILURE,
+  POST_EDIT_UPLOADING_SUCCESS,
+  CATEGORY_FIND_REQUEST,
+  CATEGORY_FIND_FAILURE,
+  CATEGORY_FIND_SUCCESS,
 } from '../types';
 import { push } from 'connected-react-router';
 import { all, call, fork, put, takeEvery } from 'redux-saga/effects';
@@ -103,10 +115,144 @@ function* watchloadPostDetail() {
   yield takeEvery(POST_DETAIL_LOADING_REQUEST, loadPostDetail);
 }
 
+// Post Delete
+const DeletePostAPI = (payload) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  const token = payload.token;
+  if (token) {
+    config.headers['x-auth-token'] = token;
+  }
+  return axios.delete(`/api/post/${payload.id}`, config);
+};
+
+function* DeletePost(action) {
+  try {
+    const result = yield call(DeletePostAPI, action.payload);
+    console.log(result, 'DeletePostAPI, action.payload');
+    yield put({
+      type: POST_DELETE_SUCCESS,
+      payload: result.data,
+    });
+    yield put(push('/'));
+  } catch (e) {
+    yield put({
+      type: POST_DELETE_FAILURE,
+      payload: e,
+    });
+  }
+}
+
+function* watchDeletePost() {
+  yield takeEvery(POST_DELETE_REQUEST, DeletePost);
+}
+
+// Post Edit Load
+const PostEditLoadAPI = (payload) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  const token = payload.token;
+  if (token) {
+    config.headers['x-auth-token'] = token;
+  }
+  return axios.get(`/api/post/${payload.id}/edit`, config);
+};
+
+function* PostEditLoad(action) {
+  try {
+    const result = yield call(PostEditLoadAPI, action.payload);
+
+    yield put({
+      type: POST_EDIT_LOADING_SUCCESS,
+      payload: result.data,
+    });
+  } catch (e) {
+    yield put({
+      type: POST_EDIT_LOADING_FAILURE,
+      payload: e,
+    });
+    yield put(push('/'));
+  }
+}
+
+function* watchPostEditLoad() {
+  yield takeEvery(POST_EDIT_LOADING_REQUEST, PostEditLoad);
+}
+
+// Post Edit upLoad
+const PostEditUploadAPI = (payload) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  const token = payload.token;
+  if (token) {
+    config.headers['x-auth-token'] = token;
+  }
+  return axios.post(`/api/post/${payload.id}/edit`, payload, config);
+};
+
+function* PostEditUpload(action) {
+  try {
+    const result = yield call(PostEditUploadAPI, action.payload);
+
+    yield put({
+      type: POST_EDIT_UPLOADING_SUCCESS,
+      payload: result.data,
+    });
+    yield put(push(`/post/${result.data._id}`));
+  } catch (e) {
+    yield put({
+      type: POST_EDIT_UPLOADING_FAILURE,
+      payload: e,
+    });
+    yield put(push('/'));
+  }
+}
+
+function* watchPostEditUploadPost() {
+  yield takeEvery(POST_EDIT_UPLOADING_REQUEST, PostEditUpload);
+}
+
+// Category Find
+const CategoryFindAPI = (payload) => {
+  return axios.get(`/api/post/category/${encodeURIComponent(payload)}`);
+};
+
+function* CategoryFind(action) {
+  try {
+    const result = yield call(CategoryFindAPI, action.payload);
+    yield put({
+      type: CATEGORY_FIND_SUCCESS,
+      payload: result.data,
+    });
+  } catch (e) {
+    yield put({
+      type: CATEGORY_FIND_FAILURE,
+      payload: e,
+    });
+  }
+}
+
+function* watchCategoryFind() {
+  yield takeEvery(CATEGORY_FIND_REQUEST, CategoryFind);
+}
+
 export default function* postSaga() {
   yield all([
     fork(watchLoadPosts),
     fork(watchuploadPosts),
     fork(watchloadPostDetail),
+    fork(watchDeletePost),
+    fork(watchPostEditLoad),
+    fork(watchPostEditUploadPost),
+    fork(watchCategoryFind),
   ]);
 }

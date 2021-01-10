@@ -53,8 +53,9 @@ router.post('/image', uploadS3.array('upload', 5), async (req, res, next) => {
 // api/post
 router.get('/', async (req, res) => {
   const postFindResult = await Post.find();
-  console.log(postFindResult, 'Got all the post');
-  res.json(postFindResult);
+  const categoryFindResult = await Category.find();
+  const result = { postFindResult, categoryFindResult };
+  res.json(result);
 });
 
 // @route POST api/post
@@ -129,7 +130,7 @@ router.get('/:id', async (req, res, next) => {
         select: 'categoryName',
       });
 
-    req.params.idpost.views += 1;
+    post.views += 1;
     post.save();
 
     console.log(post);
@@ -149,7 +150,7 @@ router.get('/:id', async (req, res, next) => {
 router.get('/:id/comments', async (req, res) => {
   try {
     const comment = await Post.findById(req.params.id).populate({
-      path: 'comment',
+      path: 'comments',
     });
     const result = comment.comments;
     console.log(result, 'comment load');
@@ -187,4 +188,125 @@ router.post('/:id/comments', async (req, res) => {
     next(e);
   }
 });
+
+// @route   Delete api/post/:id
+// @desc    Delete a Post
+// @access  Private
+
+// @route    Delete api/post/:id
+// @desc     Delete a Post
+// @access   Private
+
+router.delete('/:id', auth, async (req, res) => {
+  await Post.deleteMany({ _id: req.params.id });
+  await Comment.deleteMany({ post: req.params.id });
+  await User.findByIdAndUpdate(req.user.id, {
+    $pull: {
+      posts: req.params.id,
+      comments: { post_id: req.params.id },
+    },
+  });
+  const CategoryUpdateResult = await Category.findOneAndUpdate(
+    { posts: req.params.id },
+    { $pull: { posts: req.params.id } },
+    { new: true }
+  );
+
+  if (CategoryUpdateResult.posts.length === 0) {
+    await Category.deleteMany({ _id: CategoryUpdateResult });
+  }
+  return res.json({ success: true });
+});
+
+// @route    GET api/post/:id/edit
+// @desc     Edit Post
+// @access   Private
+router.get('/:id/edit', auth, async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id).populate('creator', 'name');
+    res.json(post);
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+router.post('/:id/edit', auth, async (req, res, next) => {
+  console.log(req, 'api/post/:id/edit');
+  const {
+    body: { title, contents, fileUrl, id },
+  } = req;
+
+  try {
+    const modified_post = await Post.findByIdAndUpdate(
+      id,
+      {
+        title,
+        contents,
+        fileUrl,
+        date: moment().format('YYYY-MM-DD hh:mm:ss'),
+      },
+      { new: true }
+    );
+    console.log(modified_post, 'edit modified');
+    res.redirect(`/api/post/${modified_post.id}`);
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+}); // @route    GET api/post/:id/edit
+// @desc     Edit Post
+// @access   Private
+router.get('/:id/edit', auth, async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id).populate('creator', 'name');
+    res.json(post);
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+router.post('/:id/edit', auth, async (req, res, next) => {
+  console.log(req, 'api/post/:id/edit');
+  const {
+    body: { title, contents, fileUrl, id },
+  } = req;
+
+  try {
+    const modified_post = await Post.findByIdAndUpdate(
+      id,
+      {
+        title,
+        contents,
+        fileUrl,
+        date: moment().format('YYYY-MM-DD hh:mm:ss'),
+      },
+      { new: true }
+    );
+    console.log(modified_post, 'edit modified');
+    res.redirect(`/api/post/${modified_post.id}`);
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+});
+
+router.get('/category/:categoryName', async (req, res, next) => {
+  try {
+    const result = await Category.findOne(
+      {
+        categoryName: {
+          $regex: req.params.categoryName,
+          $options: 'i',
+        },
+      },
+      'posts'
+    ).populate({ path: 'posts' });
+    console.log(result, 'Category Find result');
+    res.send(result);
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+});
+
 export default router;

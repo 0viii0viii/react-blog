@@ -11,6 +11,15 @@ import {
   POST_UPLOADING_SUCCESS,
   POST_UPLOADING_REQUEST,
   POST_UPLOADING_FAILURE,
+  POST_EDIT_UPLOADING_SUCCESS,
+  POST_EDIT_UPLOADING_FAILURE,
+  POST_EDIT_UPLOADING_REQUEST,
+  POST_EDIT_LOADING_SUCCESS,
+  POST_EDIT_LOADING_FAILURE,
+  POST_EDIT_LOADING_REQUEST,
+  CATEGORY_FIND_REQUEST,
+  CATEGORY_FIND_SUCCESS,
+  CATEGORY_FIND_FAILURE,
 } from '../types';
 
 const initialState = {
@@ -39,7 +48,8 @@ export default function (state = initialState, action) {
     case POST_LOADING_SUCCESS:
       return {
         ...state,
-        posts: [...state.posts, ...action.payload],
+        posts: [...state.posts, ...action.payload.postFindResult],
+        categoryFindResult: action.payload.categoryFindResult,
         loading: false,
       };
     case POST_LOADING_FAILURE:
@@ -100,6 +110,62 @@ export default function (state = initialState, action) {
       return {
         ...state,
         error: action.payload,
+        loading: false,
+      };
+    case POST_EDIT_LOADING_REQUEST:
+      return {
+        ...state,
+        posts: [],
+        loading: true,
+      };
+    case POST_EDIT_LOADING_SUCCESS:
+      return {
+        ...state,
+        postDetail: action.payload,
+        loading: false,
+      };
+    case POST_EDIT_LOADING_FAILURE:
+      return {
+        ...state,
+        error: action.payload,
+        loading: false,
+      };
+
+    case POST_EDIT_UPLOADING_REQUEST:
+      return {
+        ...state,
+
+        loading: true,
+      };
+    case POST_EDIT_UPLOADING_SUCCESS:
+      return {
+        ...state,
+        posts: action.payload,
+        isAuthenticated: true,
+        loading: false,
+      };
+    case POST_EDIT_UPLOADING_FAILURE:
+      return {
+        ...state,
+        error: action.payload,
+        loading: false,
+      };
+    case CATEGORY_FIND_REQUEST:
+      return {
+        ...state,
+        posts: [],
+        loading: true,
+      };
+    case CATEGORY_FIND_SUCCESS:
+      return {
+        ...state,
+        categoryFindResult: action.payload,
+        loading: false,
+      };
+    case CATEGORY_FIND_FAILURE:
+      return {
+        ...state,
+        categoryFindResult: action.payload,
         loading: false,
       };
     default:
