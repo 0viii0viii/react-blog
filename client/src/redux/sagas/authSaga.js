@@ -1,21 +1,25 @@
 import axios from 'axios';
-import { all, call, put, takeEvery, fork } from 'redux-saga/effects';
+import { push } from 'connected-react-router';
+import { call, put, takeEvery, all, fork } from 'redux-saga/effects';
 import {
-  CLEAR_ERROR_FAILURE,
-  CLEAR_ERROR_REQUEST,
-  CLEAR_ERROR_SUCCESS,
   LOGIN_FAILURE,
-  LOGIN_REQUEST,
   LOGIN_SUCCESS,
+  LOGIN_REQUEST,
+  LOGOUT_SUCCESS,
   LOGOUT_FAILURE,
   LOGOUT_REQUEST,
-  LOGOUT_SUCCESS,
+  REGISTER_SUCCESS,
   REGISTER_FAILURE,
   REGISTER_REQUEST,
-  REGISTER_SUCCESS,
+  CLEAR_ERROR_REQUEST,
+  CLEAR_ERROR_FAILURE,
+  CLEAR_ERROR_SUCCESS,
+  USER_LOADING_SUCCESS,
   USER_LOADING_FAILURE,
   USER_LOADING_REQUEST,
-  USER_LOADING_SUCCESS,
+  PASSWORD_EDIT_UPLOADING_SUCCESS,
+  PASSWORD_EDIT_UPLOADING_REQUEST,
+  PASSWORD_EDIT_UPLOADING_FAILURE,
 } from '../types';
 
 // Login
@@ -50,7 +54,7 @@ function* watchLoginUser() {
   yield takeEvery(LOGIN_REQUEST, loginUser);
 }
 
-//LOGOUT
+// LOGOUT
 
 function* logout(action) {
   try {
@@ -73,7 +77,7 @@ function* watchlogout() {
 
 const registerUserAPI = (req) => {
   console.log(req, 'req');
-  //routes address
+
   return axios.post('api/user', req);
 };
 
@@ -108,6 +112,7 @@ function* clearError() {
     yield put({
       type: CLEAR_ERROR_FAILURE,
     });
+    console.error(e);
   }
 }
 
@@ -116,7 +121,7 @@ function* watchclearError() {
 }
 
 // User Loading
-//로그인이랑 비슷, 로딩은 로그인여부만 확인하면되므로 토큰만 넘겨주면된다.
+
 const userLoadingAPI = (token) => {
   console.log(token);
 
@@ -135,7 +140,6 @@ function* userLoading(action) {
   try {
     console.log(action, 'userLoading');
     const result = yield call(userLoadingAPI, action.payload);
-    console.log(result);
     yield put({
       type: USER_LOADING_SUCCESS,
       payload: result.data,
@@ -152,6 +156,43 @@ function* watchuserLoading() {
   yield takeEvery(USER_LOADING_REQUEST, userLoading);
 }
 
+// Edit Password
+
+const EditPasswordAPI = (payload) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  const token = payload.token;
+
+  if (token) {
+    config.headers['x-auth-token'] = token;
+  }
+  return axios.post(`/api/user/${payload.userName}/profile`, payload, config);
+};
+
+function* EditPassword(action) {
+  try {
+    console.log(action, 'EditPassword');
+    const result = yield call(EditPasswordAPI, action.payload);
+    yield put({
+      type: PASSWORD_EDIT_UPLOADING_SUCCESS,
+      payload: result.data,
+    });
+  } catch (e) {
+    console.log(e, 'e');
+    yield put({
+      type: PASSWORD_EDIT_UPLOADING_FAILURE,
+      payload: e.response.data,
+    });
+  }
+}
+
+function* watchEditPassword() {
+  yield takeEvery(PASSWORD_EDIT_UPLOADING_REQUEST, EditPassword);
+}
+
 export default function* authSaga() {
   yield all([
     fork(watchLoginUser),
@@ -159,5 +200,6 @@ export default function* authSaga() {
     fork(watchregisterUser),
     fork(watchclearError),
     fork(watchuserLoading),
+    fork(watchEditPassword),
   ]);
 }

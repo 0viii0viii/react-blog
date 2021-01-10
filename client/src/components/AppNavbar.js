@@ -11,7 +11,7 @@ import {
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import LoginModal from '../components/auth/LoginModal';
-import { LOGOUT_REQUEST } from '../redux/types';
+import { LOGOUT_REQUEST, POST_WRITE_REQUEST } from '../redux/types';
 import { useDispatch, useSelector } from 'react-redux';
 import RegisterModal from './auth/RegisterModal';
 import SearchInput from './search/searchInput';
@@ -40,7 +40,12 @@ const AppNavbar = () => {
     setIsOpen(!isOpen);
   };
 
-  const addPostClick = () => {};
+  const addPostClick = () => {
+    dispatch({
+      type: POST_WRITE_REQUEST,
+    });
+  };
+
   const authLink = (
     <>
       <NavItem>
@@ -61,7 +66,7 @@ const AppNavbar = () => {
       <NavItem className="d-flex justify-content-center">
         <Form className="col mt-2">
           {user && user.name ? (
-            <Link>
+            <Link to={`/user/${user.name}/profile`}>
               <Button outline color="light" className="px-3" block>
                 <strong>{user ? `Welcome ${user.name}` : ''}</strong>
               </Button>

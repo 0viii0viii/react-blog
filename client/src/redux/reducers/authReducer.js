@@ -1,19 +1,22 @@
 import {
-  CLEAR_ERROR_FAILURE,
-  CLEAR_ERROR_REQUEST,
-  CLEAR_ERROR_SUCCESS,
-  LOGIN_FAILURE,
   LOGIN_REQUEST,
   LOGIN_SUCCESS,
-  LOGOUT_FAILURE,
+  LOGIN_FAILURE,
+  CLEAR_ERROR_REQUEST,
+  CLEAR_ERROR_SUCCESS,
+  CLEAR_ERROR_FAILURE,
   LOGOUT_REQUEST,
   LOGOUT_SUCCESS,
-  REGISTER_FAILURE,
+  LOGOUT_FAILURE,
   REGISTER_REQUEST,
   REGISTER_SUCCESS,
-  USER_LOADING_FAILURE,
+  REGISTER_FAILURE,
   USER_LOADING_REQUEST,
   USER_LOADING_SUCCESS,
+  USER_LOADING_FAILURE,
+  PASSWORD_EDIT_UPLOADING_REQUEST,
+  PASSWORD_EDIT_UPLOADING_SUCCESS,
+  PASSWORD_EDIT_UPLOADING_FAILURE,
 } from '../types';
 
 const initialState = {
@@ -26,20 +29,21 @@ const initialState = {
   userRole: '',
   errorMsg: '',
   successMsg: '',
+  previousMatchMsg: '',
 };
 
 const authReducer = (state = initialState, action) => {
   switch (action.type) {
     case REGISTER_REQUEST:
-    case LOGOUT_REQUEST:
     case LOGIN_REQUEST:
+    case LOGOUT_REQUEST:
       return {
         ...state,
         errorMsg: '',
         isLoading: true,
       };
-    case LOGIN_SUCCESS:
     case REGISTER_SUCCESS:
+    case LOGIN_SUCCESS:
       localStorage.setItem('token', action.payload.token);
       return {
         ...state,
@@ -50,9 +54,10 @@ const authReducer = (state = initialState, action) => {
         userRole: action.payload.user.role,
         errorMsg: '',
       };
+
     case REGISTER_FAILURE:
-    case LOGOUT_FAILURE:
     case LOGIN_FAILURE:
+    case LOGOUT_FAILURE:
       localStorage.removeItem('token');
       return {
         ...state,
@@ -76,21 +81,7 @@ const authReducer = (state = initialState, action) => {
         userRole: null,
         errorMsg: '',
       };
-    case CLEAR_ERROR_REQUEST:
-      return {
-        ...state,
-        errorMsg: null,
-      };
-    case CLEAR_ERROR_SUCCESS:
-      return {
-        ...state,
-        errorMsg: null,
-      };
-    case CLEAR_ERROR_FAILURE:
-      return {
-        ...state,
-        errorMsg: null,
-      };
+
     case USER_LOADING_REQUEST:
       return {
         ...state,
@@ -114,6 +105,47 @@ const authReducer = (state = initialState, action) => {
         isLoading: false,
         userRole: '',
       };
+    case PASSWORD_EDIT_UPLOADING_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case PASSWORD_EDIT_UPLOADING_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        successMsg: action.payload.success_msg,
+        errorMsg: '',
+        previousMsg: '',
+      };
+    case PASSWORD_EDIT_UPLOADING_FAILURE:
+      console.log(action.payload.fail_msg, 'fail');
+      console.log(action.payload.match_msg, 'match');
+      return {
+        ...state,
+        isLoading: false,
+        successMsg: '',
+        errorMsg: action.payload.fail_msg,
+        previousMatchMsg: action.payload.match_msg,
+      };
+    case CLEAR_ERROR_REQUEST:
+      return {
+        ...state,
+      };
+    case CLEAR_ERROR_SUCCESS:
+      return {
+        ...state,
+        errorMsg: '',
+        previousMatchMsg: '',
+        successMsg: '',
+      };
+    case CLEAR_ERROR_FAILURE:
+      return {
+        ...state,
+        errorMsg: 'Clear Error Fail',
+        previousMatchMsg: 'Clear Error Fail',
+      };
+
     default:
       return state;
   }
