@@ -28,7 +28,7 @@ const SearchInput = () => {
   const resetValue = useRef(null);
   return (
     <>
-      <Form onSubmit={onSubmit} className="col mt-2">
+      <Form onSubmit={onSubmit} className="col-sm mt-2 ">
         <Input name="searchBy" onChange={onChange} innerRef={resetValue} />
       </Form>
     </>

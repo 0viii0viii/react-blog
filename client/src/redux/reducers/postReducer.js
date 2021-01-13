@@ -23,6 +23,7 @@ import {
   SEARCH_REQUEST,
   SEARCH_SUCCESS,
   SEARCH_FAILURE,
+  PROFILE_EDIT_REQUEST,
 } from '../types';
 
 const initialState = {
@@ -45,7 +46,6 @@ export default function (state = initialState, action) {
     case POST_LOADING_REQUEST:
       return {
         ...state,
-
         loading: true,
       };
     case POST_LOADING_SUCCESS:
@@ -138,7 +138,6 @@ export default function (state = initialState, action) {
     case POST_EDIT_UPLOADING_REQUEST:
       return {
         ...state,
-
         loading: true,
       };
     case POST_EDIT_UPLOADING_SUCCESS:
@@ -190,6 +189,12 @@ export default function (state = initialState, action) {
       return {
         ...state,
         searchResult: action.payload,
+        loading: false,
+      };
+    case PROFILE_EDIT_REQUEST:
+      return {
+        ...state,
+        posts: [],
         loading: false,
       };
     default:

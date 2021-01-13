@@ -144,7 +144,6 @@ router.get('/:id', async (req, res, next) => {
 
     post.views += 1;
     post.save();
-
     console.log(post);
     res.json(post);
   } catch (e) {

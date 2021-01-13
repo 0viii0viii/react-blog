@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { push } from 'connected-react-router';
 import { call, put, takeEvery, all, fork } from 'redux-saga/effects';
 import {
   LOGIN_FAILURE,

@@ -76,7 +76,7 @@ function* uploadPosts(action) {
       type: POST_UPLOADING_SUCCESS,
       payload: result.data,
     });
-    yield put(push(`/post${result.data._id}`));
+    yield put(push(`/post/${result.data._id}`));
   } catch (e) {
     yield put({
       type: POST_UPLOADING_FAILURE,

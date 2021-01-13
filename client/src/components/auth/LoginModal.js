@@ -60,7 +60,7 @@ const LoginModal = () => {
     <div>
       <NavLink
         onClick={handleToggle}
-        className="text-white text-decoration-none"
+        className="text-dark text-decoration-none"
         href="#"
       >
         Login

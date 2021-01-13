@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Button,
   Collapse,
   Container,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
   Form,
   Nav,
   Navbar,
@@ -11,13 +14,19 @@ import {
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import LoginModal from '../components/auth/LoginModal';
-import { LOGOUT_REQUEST, POST_WRITE_REQUEST } from '../redux/types';
+import {
+  LOGOUT_REQUEST,
+  POST_WRITE_REQUEST,
+  PROFILE_EDIT_REQUEST,
+} from '../redux/types';
 import { useDispatch, useSelector } from 'react-redux';
 import RegisterModal from './auth/RegisterModal';
 import SearchInput from './search/searchInput';
 
 const AppNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const toggle = () => setDropdownOpen((prevState) => !prevState);
   const { isAuthenticated, user, userRole } = useSelector(
     (state) => state.auth
   );
@@ -32,6 +41,7 @@ const AppNavbar = () => {
     });
   }, [dispatch]);
   //로그인후 dropdown 초기화
+
   useEffect(() => {
     setIsOpen(false);
   }, [user]);
@@ -46,46 +56,118 @@ const AppNavbar = () => {
     });
   };
 
+  const profileClick = () => {
+    dispatch({
+      type: PROFILE_EDIT_REQUEST,
+    });
+  };
   const authLink = (
     <>
       <NavItem>
         {userRole === 'Master' ? (
-          <Form className="col mt-2">
+          <Form className="col mt-3">
             <Link
               to="post"
-              className="btn btn-success block text-white px-3"
+              className="btn btn-white block text-dark px-3"
               onClick={addPostClick}
             >
-              Add Post
+              글쓰기
             </Link>
           </Form>
         ) : (
           ''
         )}
       </NavItem>
-      <NavItem className="d-flex justify-content-center">
-        <Form className="col mt-2">
-          {user && user.name ? (
-            <Link to={`/user/${user.name}/profile`}>
-              <Button outline color="light" className="px-3" block>
-                <strong>{user ? `Welcome ${user.name}` : ''}</strong>
-              </Button>
-            </Link>
-          ) : (
-            <Button outline color="light" className="px-3" block>
-              <strong>No User</strong>
-            </Button>
-          )}
-        </Form>
+      <NavItem className="d-flex justify-content-center px-3">
         <NavItem>
-          <Form className="col">
-            <Link onClick={onLogout} to="#">
-              <Button outline color="light" className="mt-2" block>
-                Logout
-              </Button>
+          <Dropdown
+            size="md"
+            isOpen={dropdownOpen}
+            toggle={toggle}
+            className="col mt-3"
+          >
+            <DropdownToggle
+              className="bg-light text-dark btn-outline-light"
+              caret
+            >
+              더 보기
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem header>
+                {' '}
+                {user && user.name ? (
+                  <Link className="text-dark text-decoration-none">
+                    {user ? `${user.name}` : ''}
+                  </Link>
+                ) : (
+                  <Link outline color="light" className="px-3" block>
+                    <strong>No User</strong>
+                  </Link>
+                )}
+              </DropdownItem>
+              <DropdownItem divider />
+              <DropdownItem>
+                {user && user.name ? (
+                  <Link
+                    to={`/user/${user.name}/profile`}
+                    onClick={profileClick}
+                    className="text-dark text-decoration-none"
+                  >
+                    프로필
+                  </Link>
+                ) : (
+                  ''
+                )}
+              </DropdownItem>
+              <DropdownItem onClick={onLogout}>로그아웃</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </NavItem>
+      </NavItem>
+    </>
+  );
+
+  const authLinkMobile = (
+    <>
+      <NavItem className="mt-3 mb-1">
+        {user && user.name ? (
+          <Link className="text-dark text-decoration-none px-3 mt-3 ml-3">
+            {user ? `${user.name}` : ''}
+          </Link>
+        ) : (
+          <Link outline color="light" className="px-3 ml-3" block>
+            <strong>No User</strong>
+          </Link>
+        )}
+      </NavItem>
+      <DropdownItem divider />
+      <NavItem>
+        {userRole === 'Master' ? (
+          <Form className="col mt-1">
+            <Link
+              to="post"
+              className="btn btn-white block text-dark px-3"
+              onClick={addPostClick}
+            >
+              글쓰기
             </Link>
           </Form>
-        </NavItem>
+        ) : (
+          ''
+        )}
+      </NavItem>
+      <NavItem className="mt-3">
+        {user && user.name ? (
+          <Link
+            to={`/user/${user.name}/profile`}
+            onClick={profileClick}
+            className="text-dark text-decoration-none px-3 ml-3"
+          >
+            프로필
+          </Link>
+        ) : (
+          ''
+        )}
       </NavItem>
     </>
   );
@@ -102,12 +184,11 @@ const AppNavbar = () => {
   );
   return (
     <>
-      <Navbar color="dark" expand="lg" className="sticky-top">
+      <Navbar color="light" expand="lg" className="sticky-top">
         <Container>
-          <Link to="/" className="text-white text-decoration-none">
-            React Blog by 0viii0viii
+          <Link to="/" className="text-dark text-decoration-none">
+            아스날 커뮤니티
           </Link>
-
           <NavbarToggler onClick={handleToggle} />
           <Collapse isOpen={isOpen} navbar>
             <SearchInput isOpen={isOpen} />

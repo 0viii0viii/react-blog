@@ -62,7 +62,7 @@ const RegisterModal = () => {
       <NavLink
         onClick={handleToggle}
         href="#"
-        className="text-white text-decoration-none"
+        className="text-dark text-decoration-none"
       >
         Register
       </NavLink>
